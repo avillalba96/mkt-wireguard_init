@@ -31,7 +31,7 @@ Este tutorial te guiará en la configuración de un servidor WireGuard en MikroT
 
 3. **Verificar la clave privada del servidor**:
 
-   Después de ejecutar el script, se imprimirá en la consola la **clave privada** del servidor WireGuard (interfaz `wg0`), que deberás copiar para configurarla en los clientes.
+   Después de ejecutar el script, se imprimirá en la consola la **clave privada** del servidor WireGuard (interfaz `wg0`), que deberás copiar para configurarla en los clientes, se le pedira al ejecutar el script de instalacion en máquina Linux.
 
 ---
 
