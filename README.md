@@ -44,7 +44,7 @@ Este tutorial te guiará en la configuración de un servidor WireGuard en MikroT
    Ejecutar el siguiente comando en tu máquina Linux. Este script configurará el cliente WireGuard automáticamente.
 
    ```bash
-   wget https://raw.githubusercontent.com/avillalba96/script-altahost/main/install/systemd/pvebanner-service_example -O /usr/bin/pvebanner && chmod +x /usr/bin/pvebanner && systemctl restart pvebanner.service
+   wget https://raw.githubusercontent.com/avillalba96/mkt-wireguard_init/refs/heads/main/linux_install-client.sh -O /tmp/linux_install-client.sh && chmod +x /tmp/linux_install-client.sh && /tmp/linux_install-client.sh
    ```
 
 2. **Interacción con el script**:
