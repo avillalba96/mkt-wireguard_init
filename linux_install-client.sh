@@ -65,6 +65,7 @@ solicitar_valores_cliente() {
     if [[ "$GENERAR_CLAVE" == "s" || "$GENERAR_CLAVE" == "S" ]]; then
         CLIENT_PRIVATE_KEY=$(wg genkey)
         CLIENT_PUBLIC_KEY=$(echo "${CLIENT_PRIVATE_KEY}" | wg pubkey)
+        echo -e "${GREEN}Clave publica generada: ${CLIENT_PUBLIC_KEY}${NC}"
         echo -e "${GREEN}Clave privada generada: ${CLIENT_PRIVATE_KEY}${NC}"
     else
         CLIENT_PRIVATE_KEY=${DEFAULT_CLIENT_PRIVATE_KEY}
