@@ -80,7 +80,7 @@ En el caso de que el servidor MikroTik tenga una dirección IP dinámica (por ej
    Este script resuelve periódicamente el nombre de dominio del servidor y actualiza la ruta para asegurarse de que el tráfico se dirija a la IP correcta. Ejecuta el siguiente comando para descargar y configurar el script:
 
    ```bash
-   wget https://raw.githubusercontent.com/avillalba96/mkt-wireguard_init/refs/heads/main/update-route.sh -O /usr/local/bin/update-route.sh && chmod +x /usr/local/bin/update-route.sh
+   wget https://raw.githubusercontent.com/avillalba96/mkt-wireguard_init/refs/heads/main/other/scripts/update-route.sh -O /usr/local/bin/update-route.sh && chmod +x /usr/local/bin/update-route.sh
    ```
 
 2. **Agregar el script al crontab**:
