@@ -165,7 +165,7 @@ En el caso de que el servidor MikroTik tenga una dirección IP dinámica (por ej
 #### 2.4. **Configurar el Peer en pfSense:**
 
    - Ve a **VPN > WireGuard > Peers** y configura el peer para conectarte a MikroTik:
-     - **Endpoint**: vpn.avillalba.com.ar (el dominio o IP de tu MikroTik).
+     - **Endpoint**: vpn.example.com.ar (el dominio o IP de tu MikroTik).
      - **Allowed IPs**: 10.10.8.1/32, 10.10.9.0/24 (la red de tu notebook).
      - **Keep Alive**: 25.
 
