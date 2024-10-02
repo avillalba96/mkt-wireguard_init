@@ -2,7 +2,7 @@
 
 ## Tutorial para Configurar WireGuard en Cliente Linux y Servidor MikroTik
 
-Este tutorial te guiará en la configuración de un servidor WireGuard en MikroTik y de un cliente en Linux. Usaremos scripts predefinidos para automatizar la configuración tanto en el servidor como en los clientes.
+Este tutorial te guiará en la configuración de un servidor **WireGuard** en **MikroTik** y un cliente en **Linux**. Usaremos scripts predefinidos para automatizar la configuración en ambas plataformas. Además, incluimos un script para gestionar rutas dinámicas en el cliente, que se actualizará automáticamente si la IP del servidor cambia.
 
 ---
 
@@ -10,6 +10,7 @@ Este tutorial te guiará en la configuración de un servidor WireGuard en MikroT
 
 - **Servidor MikroTik** con acceso administrativo.
 - **Cliente Linux** con acceso sudo para la instalación y configuración de WireGuard.
+- Herramientas como **Winbox**, **FTP**, o **SCP** para subir archivos al MikroTik.
 
 ---
 
@@ -19,11 +20,11 @@ Este tutorial te guiará en la configuración de un servidor WireGuard en MikroT
 
 1. **Subir el script del servidor a MikroTik**:
 
-   Descargar el archivoCopia el archivo `mkt_install-server.rsc` al router MikroTik usando herramientas como **Winbox**, **FTP**, o **SCP**. Este archivo contiene las instrucciones necesarias para configurar la interfaz WireGuard, asignar direcciones IP y configurar las reglas de firewall.
+   Copia el archivo `mkt_install-server.rsc` al router MikroTik usando **Winbox**, **FTP**, o **SCP**. Este archivo contiene las instrucciones necesarias para configurar la interfaz WireGuard, asignar direcciones IP y establecer las reglas de firewall necesarias.
 
 2. **Importar y ejecutar el script en MikroTik**:
 
-   Abre la consola en MikroTik (por ejemplo, usando Winbox o SSH) y ejecuta el siguiente comando para importar el script y configurarlo:
+   Abre la consola en MikroTik (usando Winbox o SSH) y ejecuta el siguiente comando para importar y ejecutar el script:
 
    ```bash
    /import file="mkt_install-server.rsc"
@@ -31,7 +32,7 @@ Este tutorial te guiará en la configuración de un servidor WireGuard en MikroT
 
 3. **Verificar la clave privada del servidor**:
 
-   Después de ejecutar el script, se imprimirá en la consola la **clave privada** del servidor WireGuard (interfaz `wg0`), que deberás copiar para configurarla en los clientes, se le pedira al ejecutar el script de instalacion en máquina Linux.
+   Después de ejecutar el script, en la consola de MikroTik se imprimirá la **clave privada** del servidor (interfaz `wg0`). Copia esta clave, ya que la necesitarás para configurar los clientes Linux.
 
 ---
 
@@ -39,9 +40,9 @@ Este tutorial te guiará en la configuración de un servidor WireGuard en MikroT
 
 ### Pasos
 
-1. **Subir el script del cliente a la máquina Linux**:
+1. **Descargar y ejecutar el script del cliente en Linux**:
 
-   Ejecutar el siguiente comando en tu máquina Linux. Este script configurará el cliente WireGuard automáticamente.
+   En tu máquina Linux, ejecuta el siguiente comando para descargar y ejecutar el script de configuración del cliente:
 
    ```bash
    wget https://raw.githubusercontent.com/avillalba96/mkt-wireguard_init/refs/heads/main/linux_install-client.sh -O /tmp/linux_install-client.sh && chmod +x /tmp/linux_install-client.sh && /tmp/linux_install-client.sh
@@ -49,13 +50,18 @@ Este tutorial te guiará en la configuración de un servidor WireGuard en MikroT
 
 2. **Interacción con el script**:
 
-   - El script te solicitará ciertos datos, como el nombre del cliente, si deseas generar una nueva clave privada, la IP y el puerto del cliente, la clave pública del servidor, entre otros. Si no ingresas ningún dato, se utilizarán los valores por defecto.
+   Durante la ejecución del script, te solicitará ciertos datos:
 
-   - El script generará el archivo de configuración en `/etc/wireguard/CLIENTE-wg0.conf` y habilitará el servicio WireGuard en el arranque de la máquina.
+   - Nombre del cliente.
+   - Generación de una nueva clave privada o uso de una existente.
+   - Dirección IP y puerto del cliente.
+   - Clave pública del servidor.
+
+   Si prefieres no ingresar algún valor, se utilizarán los valores por defecto. El script generará el archivo de configuración en `/etc/wireguard/CLIENTE-wg0.conf` y habilitará el servicio de **WireGuard** para que se inicie automáticamente en el arranque del sistema.
 
 3. **Configurar el Peer en MikroTik**:
 
-   Al finalizar la ejecución del script, se imprimirá un comando que deberás ejecutar en MikroTik para agregar el peer (cliente) al servidor. Este comando será algo similar a lo siguiente:
+   Al finalizar la ejecución del script en Linux, se imprimirá un comando que debes ejecutar en MikroTik para agregar el cliente como peer. El comando será algo similar a:
 
    ```bash
    /interface wireguard peers add interface=wg0 name=CLIENTE-wg0 public-key=<CLIENTE_PUBLIC_KEY> allowed-address=<CLIENTE_IP>/32 persistent-keepalive=25
@@ -63,10 +69,46 @@ Este tutorial te guiará en la configuración de un servidor WireGuard en MikroT
 
 ---
 
-## **Consideraciones adicionales:**
+## 3. **Configuración de Actualización Automática de Rutas en Linux**
 
-- **Firewall**: El script de MikroTik incluye reglas de firewall básicas. Asegúrate de ajustarlas según las necesidades de tu red.
+En el caso de que el servidor MikroTik tenga una dirección IP dinámica (por ejemplo, **vpn.example.com.ar**), es posible que la IP cambie. Para asegurarse de que el cliente Linux se mantenga conectado, es necesario actualizar la ruta que utiliza **WireGuard** para conectarse.
+
+### Uso del script `update-route.sh`
+
+1. **Descargar y configurar el script `update-route.sh`**:
+
+   Este script resuelve periódicamente el nombre de dominio del servidor y actualiza la ruta para asegurarse de que el tráfico se dirija a la IP correcta. Ejecuta el siguiente comando para descargar y configurar el script:
+
+   ```bash
+   wget https://raw.githubusercontent.com/avillalba96/mkt-wireguard_init/refs/heads/main/update-route.sh -O /usr/local/bin/update-route.sh && chmod +x /usr/local/bin/update-route.sh
+   ```
+
+2. **Agregar el script al crontab**:
+
+   Para que el script se ejecute automáticamente cada 5 minutos y actualice la ruta si la IP del servidor cambia, agrega la siguiente línea al **crontab**. Esto se puede hacer de forma automática con el siguiente comando:
+
+   ```bash
+   (crontab -l 2>/dev/null; echo "*/5 * * * * /usr/local/bin/update-route.sh") | crontab -
+   ```
+
+   Este comando asegura que el script **`update-route.sh`** se ejecute cada 5 minutos y registre la salida en **syslog**.
+
+3. **Verificar la salida del script**:
+
+   Los mensajes generados por el script, incluyendo la actualización de la ruta, se registrarán en **syslog**. Puedes ver la salida ejecutando:
+
+   ```bash
+   tail -f /var/log/syslog | grep update-route
+   ```
+
+---
+
+## **Consideraciones adicionales**
+
+- **Firewall**: El script de MikroTik incluye reglas de firewall básicas. Ajusta estas reglas según los requisitos de seguridad de tu red.
   
-- **Claves y Seguridad**: Es fundamental que mantengas las claves privadas seguras y que solo compartas las claves públicas entre el cliente y el servidor.
+- **Claves y Seguridad**: Asegúrate de mantener las claves privadas seguras. Solo se deben compartir las claves públicas entre el servidor y los clientes.
 
-- **Configuración adicional del cliente**: Si necesitas configurar más peers en el cliente Linux, puedes modificar el archivo de configuración que el script genera en `/etc/wireguard/CLIENTE-wg0.conf`.
+- **Configuración adicional del cliente**: Si necesitas configurar más peers en el cliente Linux, puedes modificar el archivo de configuración generado en `/etc/wireguard/CLIENTE-wg0.conf`.
+
+- **Monitorización y logs**: Todos los eventos relacionados con la actualización de la ruta del cliente Linux se registrarán en **syslog**, lo que facilita la monitorización de posibles problemas de conexión.
