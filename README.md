@@ -2,25 +2,28 @@
 
 ## Tutorial para Configurar WireGuard en Cliente Linux y Servidor MikroTik
 
-Este tutorial te guiará en la configuración de un servidor **WireGuard** en **MikroTik** y un cliente en **Linux**. Usaremos scripts predefinidos para automatizar la configuración en ambas plataformas. Además, incluimos un script para gestionar rutas dinámicas en el cliente, que se actualizará automáticamente si la IP del servidor cambia.
+Este tutorial te guiará en dos configuraciones diferentes de WireGuard: **Peer-to-Client** (con un cliente en Linux y servidor en MikroTik) y **Peer-to-Peer** (entre dos servidores, MikroTik y pfSense). También se incluye la configuración de scripts para gestionar rutas dinámicas en el cliente Linux y la creación de reglas de firewall en ambas plataformas.
 
 ---
 
-### **Requisitos previos**
+## **Requisitos previos**
 
 - **Servidor MikroTik** con acceso administrativo.
 - **Cliente Linux** con acceso sudo para la instalación y configuración de WireGuard.
 - Herramientas como **Winbox**, **FTP**, o **SCP** para subir archivos al MikroTik.
+- **pfSense** si utilizas la configuración Peer-to-Peer.
 
 ---
 
-## 1. **Instalación del Servidor WireGuard en MikroTik**
+## **WireGuard Peer-to-Client**
 
-### Pasos
+### 1. Instalación del Servidor WireGuard en MikroTik
+
+#### Pasos
 
 1. **Subir el script del servidor a MikroTik**:
 
-   Copia el archivo `mkt_install-server.rsc` al router MikroTik usando **Winbox**, **FTP**, o **SCP**. Este archivo contiene las instrucciones necesarias para configurar la interfaz WireGuard, asignar direcciones IP y establecer las reglas de firewall necesarias.
+   Editar las variables necesarias y copia el archivo `mkt_install-server.rsc` al router MikroTik usando **Winbox**, **FTP**, o **SCP**. Este archivo contiene las instrucciones necesarias para configurar la interfaz WireGuard, asignar direcciones IP y establecer las reglas de firewall necesarias.
 
 2. **Importar y ejecutar el script en MikroTik**:
 
@@ -36,9 +39,9 @@ Este tutorial te guiará en la configuración de un servidor **WireGuard** en **
 
 ---
 
-## 2. **Instalación del Cliente WireGuard en Linux**
+### 2. Instalación del Cliente WireGuard en Linux
 
-### Pasos
+#### Pasos
 
 1. **Descargar y ejecutar el script del cliente en Linux**:
 
@@ -69,11 +72,11 @@ Este tutorial te guiará en la configuración de un servidor **WireGuard** en **
 
 ---
 
-## 3. **Configuración de Actualización Automática de Rutas en Linux**
+### 3. Configuración de Actualización Automática de Rutas en Linux
 
 En el caso de que el servidor MikroTik tenga una dirección IP dinámica (por ejemplo, **vpn.example.com.ar**), es posible que la IP cambie. Para asegurarse de que el cliente Linux se mantenga conectado, es necesario actualizar la ruta que utiliza **WireGuard** para conectarse.
 
-### Uso del script `update-route.sh`
+#### Uso del script `update-route.sh`
 
 1. **Descargar y configurar el script `update-route.sh`**:
 
@@ -103,12 +106,124 @@ En el caso de que el servidor MikroTik tenga una dirección IP dinámica (por ej
 
 ---
 
-## **Consideraciones adicionales**
+### Consideraciones adicionales
 
 - **Firewall**: El script de MikroTik incluye reglas de firewall básicas. Ajusta estas reglas según los requisitos de seguridad de tu red.
   
 - **Claves y Seguridad**: Asegúrate de mantener las claves privadas seguras. Solo se deben compartir las claves públicas entre el servidor y los clientes.
 
-- **Configuración adicional del cliente**: Si necesitas configurar más peers en el cliente Linux, puedes modificar el archivo de configuración generado en `/etc/wireguard/CLIENTE-wg0.conf`.
+---
 
-- **Monitorización y logs**: Todos los eventos relacionados con la actualización de la ruta del cliente Linux se registrarán en **syslog**, lo que facilita la monitorización de posibles problemas de conexión.
+## **WireGuard Peer to Peer: MikroTik y pfSense**
+
+### 1. **Pasos en MikroTik**
+
+1. **Subir el script del servidor a MikroTik**:
+
+   Editar las variables necesarias y copia el archivo `mkt_install-server.rsc` al router MikroTik usando **Winbox**, **FTP**, o **SCP**. Este archivo contiene las instrucciones necesarias para configurar la interfaz WireGuard, asignar direcciones IP y establecer las reglas de firewall necesarias.
+
+2. **Importar y ejecutar el script en MikroTik**:
+
+   Abre la consola en MikroTik (usando Winbox o SSH) y ejecuta el siguiente comando para importar y ejecutar el script:
+
+   ```bash
+   /import file="mkt_install-server.rsc"
+   ```
+
+3. **Configurar el Peer en MikroTik:**
+
+   Configura el peer para el **pfSense**:
+
+   ```bash
+   /interface wireguard peers add interface="WGINTERFACENAME" public-key="PUBLICKEY_PFSENSE" endpoint="wiltel.example.com.ar:13233" allowed-address=10.10.8.2/32,192.168.0.0/24 is-responder=yes
+   ```
+
+---
+
+### 2. **Pasos en pfSense**
+
+#### 2.1. **Habilitar WireGuard:**
+
+- Ve a **VPN > WireGuard > Settings** y habilita WireGuard. Asegúrate de que **Keep Configuration** esté habilitado y que la resolución de nombres se ajuste si tu **MikroTik** usa un dominio dinámico.
+
+#### 2.2. **Asignar Interfaz a WireGuard:**
+
+   - Ve a **Interfaces > Assignments** y asigna la interfaz tun_wg0 a **WG**.
+   - Configura la interfaz:
+     - **IPv4 Address**: 10.10.8.2/24.
+     - **IPv4 Upstream Gateway**: 10.10.8.1 (la IP de WireGuard en el MikroTik).
+
+   Esto asegurará que el tráfico desde **pfSense** a MikroTik pase por el túnel.
+
+#### 2.3. **Configurar el Tunnel en pfSense:**
+
+   - Ve a **VPN > WireGuard > Tunnels** y configura el túnel con:
+     - **Listen Port**: 13233.
+     - **Interface Address**: 10.10.8.2/24.
+     - Guarda los cambios.
+
+#### 2.4. **Configurar el Peer en pfSense:**
+
+   - Ve a **VPN > WireGuard > Peers** y configura el peer para conectarte a MikroTik:
+     - **Endpoint**: vpn.avillalba.com.ar (el dominio o IP de tu MikroTik).
+     - **Allowed IPs**: 10.10.8.1/32, 10.10.9.0/24 (la red de tu notebook).
+     - **Keep Alive**: 25.
+
+#### 2.5. **Agregar Rutas Estáticas en pfSense:**
+
+   - Ve a **System > Routing > Static Routes** y agrega las siguientes rutas para asegurar que el tráfico hacia la red de tu notebook pase por el túnel:
+     - **Network**: 10.10.9.0/24.
+     - **Gateway**: WG_Gateway (10.10.8.1).
+     - **Interface**: WG (tun_wg0).
+
+---
+
+### **Configurar Reglas de Firewall en MikroTik y pfSense**
+
+#### **1. Reglas en MikroTik:**
+
+Debemos permitir el tráfico tanto de salida desde **10.10.9.0/24** (tu notebook) hacia **192.168.0.0/24** (red del pfSense) como el tráfico de entrada desde la red **192.168.0.0/24** hacia **
+
+10.10.9.0/24**.
+
+##### **Permitir el tráfico desde la red 10.10.9.2 (notebook) a la red 192.168.0.0/24:**
+
+Si quieres que los dispositivos de la red **10.10.9.0/24** (tu notebook) puedan acceder a la red **192.168.0.0/24** (detrás de pfSense), agrega la siguiente regla en el firewall de MikroTik:
+
+```bash
+/ip firewall filter add action=accept chain=forward src-address=10.10.9.0/24 dst-address=192.168.0.0/24 comment="Permitir tráfico de 10.10.9.0/24 hacia 192.168.0.0/24"
+```
+
+##### **Permitir el tráfico desde pfSense (192.168.0.0/24) hacia la red 10.10.9.0/24 (notebook):**
+
+Si deseas permitir que los dispositivos en **pfSense** (red **192.168.0.0/24**) puedan acceder a dispositivos en la red de tu notebook **10.10.9.0/24**, agrega la siguiente regla:
+
+```bash
+/ip firewall filter add action=accept chain=forward src-address=192.168.0.0/24 dst-address=10.10.9.0/24 comment="Permitir tráfico de pfSense (192.168.0.0/24) hacia 10.10.9.0/24"
+```
+
+---
+
+#### **2. Reglas en pfSense:**
+
+De forma similar, debes configurar reglas en el firewall de **pfSense** para permitir el tráfico entre las redes.
+
+##### **Permitir el tráfico desde la red 10.10.9.0/24 (notebook) hacia la red 192.168.0.0/24 (detrás de pfSense):**
+
+- Ve a **Firewall > Rules** en pfSense y agrega una regla en la interfaz **WG** (tun_wg0) que permita el tráfico desde la red **10.10.9.0/24** hacia **192.168.0.0/24**:
+
+1. **Interfaz**: WG (tun_wg0).
+2. **Protocolo**: TCP/UDP.
+3. **Source**: 10.10.9.0/24.
+4. **Destination**: 192.168.0.0/24.
+
+##### **Permitir el tráfico desde la red 192.168.0.136 (pfSense) hacia la red 10.10.9.0/24 (notebook):**
+
+Si deseas permitir el acceso desde dispositivos en la red **192.168.0.0/24** (detrás de pfSense) hacia la red de tu notebook **10.10.9.0/24**, configura la siguiente regla en pfSense:
+
+1. **Interfaz**: LAN (vmx1).
+2. **Protocolo**: TCP/UDP.
+3. **Source**: 192.168.0.136/32 (o 192.168.0.0/24 si quieres permitir toda la subred).
+4. **Destination**: 10.10.9.0/24.
+
+Estas reglas de firewall permitirán el tráfico bidireccional entre tu red **10.10.9.0/24** (notebook) y la red **192.168.0.0/24** (detrás de pfSense).
