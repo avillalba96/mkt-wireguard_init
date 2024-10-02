@@ -15,6 +15,7 @@ check_command "ip"
 # Nombre del host que queremos resolver
 ENDPOINT="vpn.example.com.ar"
 INTERFACE="ens160"
+GATEWAY="192.168.120.254"
 
 # Resolver la IP actual del endpoint
 CURRENT_IP=$(dig +short $ENDPOINT)
@@ -37,6 +38,6 @@ ROUTE_EXISTS=$(ip route | grep "$CURRENT_IP" | grep "$INTERFACE")
 
 # Si no existe la nueva ruta, agregarla
 if [ -z "$ROUTE_EXISTS" ]; then
-    logger -t update-route "Agregando nueva ruta a $CURRENT_IP por $INTERFACE"
-    sudo ip route add $CURRENT_IP dev $INTERFACE
+    logger -t update-route "Agregando nueva ruta a $CURRENT_IP a través del gateway $GATEWAY en $INTERFACE"
+    sudo ip route add $CURRENT_IP via $GATEWAY dev $INTERFACE
 fi
