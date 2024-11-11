@@ -112,7 +112,7 @@ generar_configuracion_cliente() {
     cat <<EOL >/etc/wireguard/${CLIENT_SERVER_NAME}-${DEFAULT_CLIENT_SERVER_IF}.conf
 [Interface]
 PrivateKey = ${CLIENT_PRIVATE_KEY}
-Address = ${CLIENT_ADDRESS}${CLIENT_NETMASK}
+Address = ${CLIENT_ADDRESS}/${CLIENT_NETMASK}
 #PostUp = iptables -A FORWARD -i ${CLIENT_SERVER_NAME} -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
 #PostDown = iptables -D FORWARD -i ${CLIENT_SERVER_NAME} -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
 #DNS = ${DNS_SERVER}
