@@ -48,7 +48,7 @@ Este tutorial te guiará en dos configuraciones diferentes de WireGuard: **Peer-
    En tu máquina Linux, ejecuta el siguiente comando para descargar y ejecutar el script de configuración del cliente:
 
    ```bash
-   wget https://raw.githubusercontent.com/avillalba96/mkt-wireguard_init/refs/heads/main/linux_install-client.sh -O /tmp/linux_install-client.sh && chmod +x /tmp/linux_install-client.sh && /tmp/linux_install-client.sh
+   wget https://raw.githubusercontent.com/avillalba96/mkt-wireguard_init/refs/heads/main/linux_install-client.sh -O /tmp/linux_install-client.sh && chmod +x /tmp/linux_install-client.sh && sudo /tmp/linux_install-client.sh
    ```
 
 2. **Interacción con el script**:
