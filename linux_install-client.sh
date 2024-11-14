@@ -128,24 +128,34 @@ EOL
     echo -e "${GREEN}Archivo de configuración generado correctamente.${NC}"
 }
 
-# Función para habilitar e iniciar WireGuard en el cliente
+# Función para habilitar e iniciar WireGuard en el cliente, con confirmación
 habilitar_wireguard_cliente() {
-    if systemctl enable wg-quick@${CLIENT_SERVER_NAME}-${DEFAULT_CLIENT_SERVER_IF}; then
-        echo -e "${GREEN}Servicio wg-quick@${CLIENT_SERVER_NAME}-${DEFAULT_CLIENT_SERVER_IF} habilitado correctamente.${NC}"
-    else
-        echo -e "${RED}Error al habilitar el servicio wg-quick@${CLIENT_SERVER_NAME}-${DEFAULT_CLIENT_SERVER_IF}.${NC}" >&2
-        exit 1
-    fi
+    # Preguntar al usuario si desea habilitar el servicio
+    echo -e "${YELLOW}¿Desea habilitar e iniciar el servicio WireGuard ahora? (s/n)${NC}"
+    read -p "Respuesta (por defecto: s): " habilitar_servicio
+    habilitar_servicio=${habilitar_servicio:-s}
 
-    if systemctl start wg-quick@${CLIENT_SERVER_NAME}-${DEFAULT_CLIENT_SERVER_IF}; then
-        echo -e "${GREEN}Servicio wg-quick@${CLIENT_SERVER_NAME}-${DEFAULT_CLIENT_SERVER_IF} iniciado correctamente.${NC}"
-    else
-        echo -e "${RED}Error al iniciar el servicio wg-quick@${CLIENT_SERVER_NAME}-${DEFAULT_CLIENT_SERVER_IF}.${NC}" >&2
-        exit 1
-    fi
+    # Si la respuesta es 's' o 'S', habilitar e iniciar el servicio
+    if [[ "$habilitar_servicio" == "s" || "$habilitar_servicio" == "S" ]]; then
+        if systemctl enable wg-quick@${CLIENT_SERVER_NAME}-${DEFAULT_CLIENT_SERVER_IF}; then
+            echo -e "${GREEN}Servicio wg-quick@${CLIENT_SERVER_NAME}-${DEFAULT_CLIENT_SERVER_IF} habilitado correctamente.${NC}"
+        else
+            echo -e "${RED}Error al habilitar el servicio wg-quick@${CLIENT_SERVER_NAME}-${DEFAULT_CLIENT_SERVER_IF}.${NC}" >&2
+            exit 1
+        fi
 
-    wg show ${CLIENT_SERVER_NAME}-${DEFAULT_CLIENT_SERVER_IF}
-    echo -e "${GREEN}WireGuard configurado e iniciado correctamente para ${CLIENT_SERVER_NAME}-${DEFAULT_CLIENT_SERVER_IF}.${NC}"
+        if systemctl start wg-quick@${CLIENT_SERVER_NAME}-${DEFAULT_CLIENT_SERVER_IF}; then
+            echo -e "${GREEN}Servicio wg-quick@${CLIENT_SERVER_NAME}-${DEFAULT_CLIENT_SERVER_IF} iniciado correctamente.${NC}"
+        else
+            echo -e "${RED}Error al iniciar el servicio wg-quick@${CLIENT_SERVER_NAME}-${DEFAULT_CLIENT_SERVER_IF}.${NC}" >&2
+            exit 1
+        fi
+
+        wg show ${CLIENT_SERVER_NAME}-${DEFAULT_CLIENT_SERVER_IF}
+        echo -e "${GREEN}WireGuard configurado e iniciado correctamente para ${CLIENT_SERVER_NAME}-${DEFAULT_CLIENT_SERVER_IF}.${NC}"
+    else
+        echo -e "${YELLOW}Servicio no habilitado ni iniciado.${NC}"
+    fi
 }
 
 # Función para mostrar el comando necesario en MikroTik para configurar el peer
