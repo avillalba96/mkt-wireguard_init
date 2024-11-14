@@ -96,7 +96,15 @@ En el caso de que el servidor MikroTik tenga una dirección IP dinámica (por ej
 
    Este comando asegura que el script **`update-route.sh`** se ejecute cada 5 minutos y registre la salida en **syslog**.
 
-3. **Verificar la salida del script**:
+3. **Verificar que el script tenga las variables correctas**:
+
+   Editar las variables necesarias **`ENDPOIN`**,**`INTERFACE`** y **`GATEWAY`** en el script con el siguiente comando:
+
+   ```bash
+   vi /usr/local/bin/update-route.sh
+   ```
+
+4. **Verificar la salida del script**:
 
    Los mensajes generados por el script, incluyendo la actualización de la ruta, se registrarán en **syslog**. Puedes ver la salida ejecutando:
 
