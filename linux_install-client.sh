@@ -161,7 +161,7 @@ habilitar_wireguard_cliente() {
 # Función para mostrar el comando necesario en MikroTik para configurar el peer
 mostrar_comando_mikrotik() {
     echo -e "${BLUE}Ejecutar el siguiente comando en su MikroTik:${NC}"
-    echo -e "${YELLOW}/interface wireguard peers add interface=$DEFAULT_CLIENT_SERVER_IF is-responder=yes name=$DEFAULT_HOSTNAME public-key=\"$CLIENT_PUBLIC_KEY\" allowed-address=$CLIENT_ADDRESS/32 ${NC}"
+    echo -e "${YELLOW}/interface wireguard peers add interface=$DEFAULT_CLIENT_SERVER_IF name=$DEFAULT_HOSTNAME public-key=\"$CLIENT_PUBLIC_KEY\" allowed-address=$CLIENT_ADDRESS/32 ${NC}"
 #    echo -e "${YELLOW}/interface wireguard peers add interface=$DEFAULT_CLIENT_SERVER_IF name=$DEFAULT_HOSTNAME public-key=\"$CLIENT_PUBLIC_KEY\" allowed-address=$CLIENT_ADDRESS/32 persistent-keepalive=$DEFAULT_KEEPALIVE${NC}"
 }
 
