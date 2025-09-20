@@ -143,7 +143,7 @@ En el caso de que el servidor MikroTik tenga una dirección IP dinámica (por ej
    Configura el peer para el **pfSense**:
 
    ```bash
-   /interface wireguard peers add interface="WGINTERFACENAME" public-key="PUBLICKEY_PFSENSE" endpoint="wiltel.example.com.ar:13233" allowed-address=10.10.8.2/32,192.168.0.0/24 is-responder=yes
+   /interface wireguard peers add interface="WGINTERFACENAME" public-key="PUBLICKEY_PFSENSE" endpoint="wiltel.example.com.ar:13233" allowed-address=10.10.8.2/32,192.168.0.0/24
    ```
 
 ---
